@@ -1,0 +1,53 @@
+$bodyColor : rgb(56, 34, 34);
+$divColor : rgb(0, 0, 0);
+
+body{
+    background-color: $bodyColor;
+}
+
+
+h4 {
+    background-color: white;
+}
+
+.task {
+    width: 200px;
+    float:left;
+}
+
+.messageError{
+    color: red;
+    font: bold 12px/30px; 
+}
+
+.editTaskForm {
+    position: absolute;
+    z-index: 100;
+    left: 10px;
+    width: 400px;
+    animation-name: example;
+    animation-duration: 2s;
+    animation-fill-mode: both;
+}
+
+
+@keyframes example {
+    from {
+        top: 0px;
+    }
+
+    to {
+        top: 150px;
+    }
+}
+
+.containertask{
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    background-color: rgb(153, 117, 117);
+    box-sizing: border-box;
+    min-height: 500px;
+    min-width: 500px;
+    border-bottom-right-radius: 25px;
+}
