@@ -1,5 +1,6 @@
 export enum EnumStatusTask
 {
     Completed = "Completed",
-    Pending = "Pending"
+    Pending = "Pending",
+    Undefined = "Undefined"
 }

@@ -4,15 +4,14 @@ import { ITask } from '../interfaces/ITask';
 import { EnumStatusTask } from '../interfaces/EnumStatusTask';
 import { EditTaskForm } from './EditTaskForm';
 import { ContainerTask } from './ContainerTask';
-import { TaskImp } from '../model/TaskImp';
+
 
 interface IProps {
   taskService: ITaskService,
 }
 
 interface IState {
-  tasksPending: ITask[];
-  tasksCompleted: ITask[];
+  tasks: ITask[];
   isLoading: boolean;
   isError: boolean;
   isEditionMode: boolean;
@@ -29,12 +28,12 @@ export class App extends React.Component<IProps, IState>{
     this.handleOnDragAndDrop = this.handleOnDragAndDrop.bind(this);
 
     this.state = {
-      tasksPending: [],
-      tasksCompleted: [],
+      tasks: [],
       isLoading: true,
       isError: false,
-      isEditionMode: false
+      isEditionMode: false,
     }
+
   }
 
   componentDidMount() {
@@ -42,16 +41,14 @@ export class App extends React.Component<IProps, IState>{
     this.props.taskService.LoadTasks()
       .then((response) => {
 
-        const completed = response.filter(x => x.status === EnumStatusTask.Completed);
-        const pending = response.filter(x => x.status === EnumStatusTask.Pending)
-
         this.setState({
-          tasksCompleted: completed,
-          tasksPending: pending,
+          tasks: response,
           isLoading: false
         });
 
       }).catch((error: Response) => {
+
+        //console.log(error);
         error.text()
           .then((data: string) => {
             alert(data);
@@ -77,15 +74,14 @@ export class App extends React.Component<IProps, IState>{
         const task = response;
 
         if (newTask.status === EnumStatusTask.Pending) {
-          this.setState({
-            tasksPending: [...this.state.tasksPending, task]
-          });
+          var pending: ContainerTask = this.refs.PendingContainer as ContainerTask;
+          pending.add(task);
         }
         else {
-          this.setState({
-            tasksCompleted: [...this.state.tasksCompleted, task]
-          });
+          var completed: ContainerTask = this.refs.CompletedContainer as ContainerTask;
+          completed.add(task);
         }
+
       })
       .then();
   }
@@ -101,18 +97,17 @@ export class App extends React.Component<IProps, IState>{
           return;
         }
 
-        if (intialStatus === EnumStatusTask.Pending) {
-          this.setState({
-            tasksCompleted: [...this.state.tasksCompleted, response],
-            tasksPending: this.state.tasksPending.filter((e) => { return e.id !== task.id; }),
-          });
 
+        var pending: ContainerTask = this.refs.PendingContainer as ContainerTask;
+        var completed: ContainerTask = this.refs.CompletedContainer as ContainerTask;
+
+        if (intialStatus === EnumStatusTask.Pending) {
+          completed.add(response);
+          pending.remove(task);
         }
         else {
-          this.setState({
-            tasksPending: [...this.state.tasksPending, response],
-            tasksCompleted: this.state.tasksCompleted.filter((e) => { return e.id !== task.id; }),
-          });
+          pending.add(response);
+          completed.remove(task);
         }
 
       })
@@ -121,21 +116,14 @@ export class App extends React.Component<IProps, IState>{
 
   handleOnDragAndDrop(idTask: number, status: EnumStatusTask): Promise<ITask> {
 
-    console.log(idTask);
-    console.log(status);
-
     const intialStatus = status;
-    var taskFound: ITask = new TaskImp();
-    var result = this.state.tasksPending.filter((e) => { return e.id === idTask; });
 
-    if (result.length > 0) {
-      taskFound = result[0]
-    }
-    else {
-      result = this.state.tasksCompleted.filter((e) => { return e.id === idTask; });
-      if (result.length > 0) {
-        taskFound = result[0]
-      }
+    var pending: ContainerTask = this.refs.PendingContainer as ContainerTask;
+    var completed: ContainerTask = this.refs.CompletedContainer as ContainerTask;
+
+    var taskFound = pending.get(idTask);
+    if (taskFound.id === 0) {
+      taskFound = completed.get(idTask);
     }
 
     if (taskFound.id > 0 && taskFound.status !== intialStatus) {
@@ -146,7 +134,6 @@ export class App extends React.Component<IProps, IState>{
     return new Promise((e) => {
       return taskFound;
     });
-
   }
 
   handleEdition(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
@@ -157,6 +144,25 @@ export class App extends React.Component<IProps, IState>{
   }
 
   render() {
+
+    const containerPending= <ContainerTask
+      ref="PendingContainer"
+      status={EnumStatusTask.Pending}
+      title="Pending Tasks"
+      tasks={this.state.tasks}
+      onToggleStatus={this.handleToggleStatus}
+      onDragAndDrop={this.handleOnDragAndDrop}
+      />
+
+    const containerCompleted=<ContainerTask
+      ref="CompletedContainer"
+      status={EnumStatusTask.Completed}
+      title="Tasks Completed"
+      tasks={this.state.tasks}
+      onToggleStatus={this.handleToggleStatus}
+      onDragAndDrop={this.handleOnDragAndDrop}
+     />
+
     return (
       <div className="App col-12">
         <header className="App-header">
@@ -187,42 +193,30 @@ export class App extends React.Component<IProps, IState>{
 
         <div className="container" >
 
+          <div className="row">
 
-            <div className="row">
-              <div className="col-6">
-
-                {!this.state.isError &&
-                  !this.state.isLoading &&
-                  <ContainerTask
-                    status={EnumStatusTask.Pending}
-                    title="Pending Tasks"
-                    tasks={this.state.tasksPending}
-                    onToggleStatus={this.handleToggleStatus}
-                    onDragAndDrop={this.handleOnDragAndDrop}
-                  />
-                }
-                </div>
-
-                <div className="col-6">
-
-                    {!this.state.isError &&
-                        !this.state.isLoading &&
-                        <ContainerTask
-                            status={EnumStatusTask.Completed}
-                            title="Tasks Completed"
-                            tasks={this.state.tasksCompleted}
-                            onToggleStatus={this.handleToggleStatus}
-                            onDragAndDrop={this.handleOnDragAndDrop}
-                        />
-                    }
-                </div>
-
+            <div className="col-6">
+              {
+                !this.state.isError &&
+                !this.state.isLoading &&
+                containerPending
+              }
             </div>
 
+            <div className="col-6">
+              {
+                !this.state.isError &&
+                !this.state.isLoading &&
+                containerCompleted
+              }
+            </div>
+
+          </div>
 
         </div>
+
       </div>
     );
   }
-}
 
+}
