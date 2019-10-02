@@ -157,17 +157,32 @@ After creation, your project should look like this:
 cd ClientApp
 Run 'npm install' or 'npm update' so that the 'node_modules' folder to be generated
 
-### `Dummy mode or Normal one`
+### `App modes`
 
-you can change boolean value so that the App to work mode Dummy (or Without Backend) or Normal
+you can choose among 3 modes or types.
+
+Dummy, this mode works with a service (implemented in typescript) simulating the backend behaviour (TaskServiceDummy).
+TaskController. this mode works against  taskController located in the backend (TaskService(true))
+TaskServiceController. this mode works against  taskController located in the backend (TaskService(false))
 
  ```
+ export enum EnumTypeController {
+    Dummy,
+    TaskController,
+    TaskServiceController
+}
+
+ ```
+
+ you can change this behaviour updating the parameter passed to the Get function.
+  ```
 export class App extends React.Component<IProps, IState>{
 
-  isDummy: boolean = false;
-  service: ITaskService = this.isDummy ? new TaskServiceDummy() : new TaskService();
-
+    service: ITaskService = new TaskServiceFactory().Get(EnumTypeController.Dummy);
  ```
+
+
+
 ### `npm start`
 
 Runs the app in the development mode.<br>

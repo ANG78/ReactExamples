@@ -2,10 +2,18 @@ import { ITaskService } from "../interfaces/ITaskService";
 import { ITask } from "../interfaces/ITask";
 import { EnumStatusTask } from "../interfaces/EnumStatusTask";
 
+
 export class TaskService implements ITaskService {
 
     private url: string = "/api/task";
 
+    constructor(isTaskController: boolean) {
+
+        if (!isTaskController) {
+            this.url = "/api/taskService";
+        }
+        
+    }
 
     LoadTasks(): Promise<ITask[]> {
 

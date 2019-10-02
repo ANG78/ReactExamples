@@ -36,6 +36,10 @@ namespace Api.Common
             services.AddScoped<ITaskService, TaskService>();
             services.AddScoped<IUserService, UserService>();
 
+            //validations
+            services.AddScoped<ITaskValidationService>(sp=> new TaskValidationService(20,40));
+            services.AddScoped<ITaskToggleStatusValidationService, TaskToggleStatusValidationService>();
+
             /*IManagementModelRetrieverRequest<ITask>*/
             services.AddScoped(sp=>
                      new ChainOfResponsibilityBuilder(sp).
@@ -54,8 +58,8 @@ namespace Api.Common
                                                                                 new PermisionValidate(EnumOperation.NEW,EnumPermission.CREATE_TASK),
                                                                                 new PermisionValidate(EnumOperation.EDITION, EnumPermission.UPDATE_TASK)),
                                 new ValidateStatusOnCreation(),
-                                new ValidateToggleStatus(sp.GetService<ITaskService>()),
-                                new ValidateAndCompleteTask( 20, 100),
+                                new ValidateToggleStatus(sp.GetService<ITaskToggleStatusValidationService>()),
+                                new ValidateAndCompleteTask(sp.GetService<ITaskValidationService>()),
                                 new StepSaveModel<ITask>(sp.GetService<ITaskService>())
                             ));
 

@@ -38,7 +38,10 @@ namespace BusinessLogic.Common
         ERROR_VALID_MAX_DEC,
 
         [Description("exceeded the number of characters for a Title {0}")]
-        ERROR_VALID_MAX_TITLE
+        ERROR_VALID_MAX_TITLE,
+
+        [Description("The user is not allowed this action")]
+        ERROR_PERMISSION_VALIDATIONS
     }
 
 

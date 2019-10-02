@@ -40,7 +40,9 @@ namespace BusinessLogic.Steps.Common
                 return Result.Ok;
             }
 
-            _userService.Validate(req.User , covered.Permission);
+            if (!_userService.Validate(req.User, covered.Permission)){
+                return new Result(EnumResultBL.ERROR_PERMISSION_VALIDATIONS);
+            }
 
             return Result.Ok;
         }

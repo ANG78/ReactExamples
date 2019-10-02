@@ -4,223 +4,220 @@ import { ITask } from '../interfaces/ITask';
 import { EnumStatusTask } from '../interfaces/EnumStatusTask';
 import { EditTaskForm } from './EditTaskForm';
 import { ContainerTask } from './ContainerTask';
-import { TaskServiceDummy } from './../services/TaskServiceDummy';
-import { TaskService } from './../services/TaskService'
+import { TaskServiceFactory } from '../services/TaskServiceFactory';
+import { EnumTypeController } from "../services/EnumTypeController";
 
 interface IProps {
 }
 
 interface IState {
-  tasks: ITask[];
-  isLoading: boolean;
-  isError: boolean;
-  isEditionMode: boolean;
+    tasks: ITask[];
+    isLoading: boolean;
+    isError: boolean;
+    isEditionMode: boolean;
 }
 
 export class App extends React.Component<IProps, IState>{
 
-  isDummy: boolean = false;
-  service: ITaskService = this.isDummy ? new TaskServiceDummy() : new TaskService();
+    service: ITaskService = new TaskServiceFactory().Get(EnumTypeController.TaskServiceController);
 
+    constructor(props: IProps) {
+        super(props);
+        this.handleAddTask = this.handleAddTask.bind(this);
+        this.handleCloseTask = this.handleCloseTask.bind(this);
+        this.handleToggleStatus = this.handleToggleStatus.bind(this);
+        this.handleOnDragAndDrop = this.handleOnDragAndDrop.bind(this);
 
-  constructor(props: IProps) {
-    super(props);
-      
-    this.handleAddTask = this.handleAddTask.bind(this);
-    this.handleCloseTask = this.handleCloseTask.bind(this);
-    this.handleToggleStatus = this.handleToggleStatus.bind(this);
-    this.handleOnDragAndDrop = this.handleOnDragAndDrop.bind(this);
+        this.state = {
+            tasks: [],
+            isLoading: true,
+            isError: false,
+            isEditionMode: false,
+        }
 
-    this.state = {
-      tasks: [],
-      isLoading: true,
-      isError: false,
-      isEditionMode: false,
     }
 
-  }
+    componentDidMount() {
 
-  componentDidMount() {
+        this.service.LoadTasks()
+            .then((response) => {
 
-      this.service.LoadTasks()
-      .then((response) => {
+                this.setState({
+                    tasks: response,
+                    isLoading: false
+                });
 
-        this.setState({
-          tasks: response,
-          isLoading: false
-        });
+            }).catch((error: Response) => {
 
-      }).catch((error: Response) => {
-
-        //console.log(error);
-        error.text()
-          .then((data: string) => {
-            alert(data);
-            this.setState({
-              isError: true,
-              isLoading: false
+                //console.log(error);
+                error.text()
+                    .then((data: string) => {
+                        alert(data);
+                        this.setState({
+                            isError: true,
+                            isLoading: false
+                        });
+                    })
             });
-          })
-      });
-  }
+    }
 
-  handleCloseTask(): any {
-    this.setState({
-      isEditionMode: false
-    });
-  }
+    handleCloseTask(): any {
+        this.setState({
+            isEditionMode: false
+        });
+    }
 
-  handleAddTask(newTask: ITask): Promise<ITask> {
+    handleAddTask(newTask: ITask): Promise<ITask> {
 
-    return this.service.AddTask(newTask)
-      .then((response) => {
+        return this.service.AddTask(newTask)
+            .then((response) => {
 
-        const task = response;
+                const task = response;
 
-        if (newTask.status === EnumStatusTask.Pending) {
-          var pending: ContainerTask = this.refs.PendingContainer as ContainerTask;
-          pending.add(task);
-        }
-        else {
-          var completed: ContainerTask = this.refs.CompletedContainer as ContainerTask;
-          completed.add(task);
-        }
+                if (newTask.status === EnumStatusTask.Pending) {
+                    var pending: ContainerTask = this.refs.PendingContainer as ContainerTask;
+                    pending.add(task);
+                }
+                else {
+                    var completed: ContainerTask = this.refs.CompletedContainer as ContainerTask;
+                    completed.add(task);
+                }
 
-      })
-      .then();
-  }
+            })
+            .then();
+    }
 
-  handleToggleStatus(task: ITask): Promise<ITask> {
+    handleToggleStatus(task: ITask): Promise<ITask> {
 
-    const intialStatus = task.status;
-    return this.service.ToggleStatus(task)
-      .then((response) => {
+        const intialStatus = task.status;
+        return this.service.ToggleStatus(task)
+            .then((response) => {
 
-        if (intialStatus === response.status) {
-          alert("status not changed");
-          return;
-        }
+                if (intialStatus === response.status) {
+                    alert("status not changed");
+                    return;
+                }
 
+
+                var pending: ContainerTask = this.refs.PendingContainer as ContainerTask;
+                var completed: ContainerTask = this.refs.CompletedContainer as ContainerTask;
+
+                if (intialStatus === EnumStatusTask.Pending) {
+                    completed.add(response);
+                    pending.remove(task);
+                }
+                else {
+                    pending.add(response);
+                    completed.remove(task);
+                }
+
+            })
+            .then();
+    }
+
+    handleOnDragAndDrop(idTask: number, status: EnumStatusTask): Promise<ITask> {
+
+        const intialStatus = status;
 
         var pending: ContainerTask = this.refs.PendingContainer as ContainerTask;
         var completed: ContainerTask = this.refs.CompletedContainer as ContainerTask;
 
-        if (intialStatus === EnumStatusTask.Pending) {
-          completed.add(response);
-          pending.remove(task);
-        }
-        else {
-          pending.add(response);
-          completed.remove(task);
+        var taskFound = pending.get(idTask);
+        if (taskFound.id === 0) {
+            taskFound = completed.get(idTask);
         }
 
-      })
-      .then();
-  }
+        if (taskFound.id > 0 && taskFound.status !== intialStatus) {
+            const taskToChange = taskFound;
+            return this.handleToggleStatus(taskToChange);
+        }
 
-  handleOnDragAndDrop(idTask: number, status: EnumStatusTask): Promise<ITask> {
-
-    const intialStatus = status;
-
-    var pending: ContainerTask = this.refs.PendingContainer as ContainerTask;
-    var completed: ContainerTask = this.refs.CompletedContainer as ContainerTask;
-
-    var taskFound = pending.get(idTask);
-    if (taskFound.id === 0) {
-      taskFound = completed.get(idTask);
+        return new Promise((e) => {
+            return taskFound;
+        });
     }
 
-    if (taskFound.id > 0 && taskFound.status !== intialStatus) {
-      const taskToChange = taskFound;
-      return this.handleToggleStatus(taskToChange);
+    handleEdition(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+        e.preventDefault();
+        this.setState({
+            isEditionMode: !this.state.isEditionMode
+        });
     }
 
-    return new Promise((e) => {
-      return taskFound;
-    });
-  }
+    render() {
 
-  handleEdition(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-    e.preventDefault();
-    this.setState({
-      isEditionMode: !this.state.isEditionMode
-    });
-  }
+        const containerPending = <ContainerTask
+            ref="PendingContainer"
+            status={EnumStatusTask.Pending}
+            title="Pending Tasks"
+            tasks={this.state.tasks}
+            onToggleStatus={this.handleToggleStatus}
+            onDragAndDrop={this.handleOnDragAndDrop}
+        />
 
-  render() {
+        const containerCompleted = <ContainerTask
+            ref="CompletedContainer"
+            status={EnumStatusTask.Completed}
+            title="Tasks Completed"
+            tasks={this.state.tasks}
+            onToggleStatus={this.handleToggleStatus}
+            onDragAndDrop={this.handleOnDragAndDrop}
+        />
 
-    const containerPending= <ContainerTask
-      ref="PendingContainer"
-      status={EnumStatusTask.Pending}
-      title="Pending Tasks"
-      tasks={this.state.tasks}
-      onToggleStatus={this.handleToggleStatus}
-      onDragAndDrop={this.handleOnDragAndDrop}
-      />
+        return (
+            <div className="App col-12">
+                <header className="App-header">
 
-    const containerCompleted=<ContainerTask
-      ref="CompletedContainer"
-      status={EnumStatusTask.Completed}
-      title="Tasks Completed"
-      tasks={this.state.tasks}
-      onToggleStatus={this.handleToggleStatus}
-      onDragAndDrop={this.handleOnDragAndDrop}
-     />
-
-    return (
-      <div className="App col-12">
-        <header className="App-header">
-
-          <nav className="navbar navbar-expand-lg navbar-light bg-light">
-            <button className="navbar-brand"
-              onClick={(e) => this.handleEdition(e)}>
-              CREATE
+                    <nav className="navbar navbar-expand-lg navbar-light bg-light">
+                        <button className="navbar-brand"
+                            onClick={(e) => this.handleEdition(e)}>
+                            CREATE
             </button>
-            <a className="navbar-brand"
-              href="/"
-            >
-              RELOAD
+                        <a className="navbar-brand"
+                            href="/"
+                        >
+                            RELOAD
             </a>
-          </nav>
-        </header>
+                    </nav>
+                </header>
 
-        <div className="editTaskForm">
-          {!this.state.isError &&
-            this.state.isEditionMode &&
-            <div>
-              <EditTaskForm
-                onCloseEdition={this.handleCloseTask}
-                onAddTask={this.handleAddTask} />
+                <div className="editTaskForm">
+                    {!this.state.isError &&
+                        this.state.isEditionMode &&
+                        <div>
+                            <EditTaskForm
+                                onCloseEdition={this.handleCloseTask}
+                                onAddTask={this.handleAddTask} />
+                        </div>
+                    }
+                </div>
+
+                <div className="container" >
+
+                    <div className="row">
+
+                        <div className="col-6">
+                            {
+                                !this.state.isError &&
+                                !this.state.isLoading &&
+                                containerPending
+                            }
+                        </div>
+
+                        <div className="col-6">
+                            {
+                                !this.state.isError &&
+                                !this.state.isLoading &&
+                                containerCompleted
+                            }
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
-          }
-        </div>
-
-        <div className="container" >
-
-          <div className="row">
-
-            <div className="col-6">
-              {
-                !this.state.isError &&
-                !this.state.isLoading &&
-                containerPending
-              }
-            </div>
-
-            <div className="col-6">
-              {
-                !this.state.isError &&
-                !this.state.isLoading &&
-                containerCompleted
-              }
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-    );
-  }
+        );
+    }
 
 }
