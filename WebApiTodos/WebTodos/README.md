@@ -6,8 +6,9 @@ You can find the most recent version of this guide [here](https://github.com/fac
 ## Table of Contents
 
 - [Updating to New Releases](#updating-to-new-releases)
-- [Sending Feedback](#sending-feedback)
 - [Folder Structure](#folder-structure)
+- [Generating node_modules folder](#Generating node_modules folder)
+- [Dummy mode or Normal one](#Dummy mode or Normal one)
 - [Available Scripts](#available-scripts)
   - [npm start](#npm-start)
   - [npm test](#npm-test)
@@ -112,51 +113,61 @@ In most cases bumping the `react-scripts` version in `package.json` and running 
 
 We commit to keeping the breaking changes minimal so you can upgrade `react-scripts` painlessly.
 
-## Sending Feedback
-
-We are always open to [your feedback](https://github.com/facebookincubator/create-react-app/issues).
-
 ## Folder Structure
 
 After creation, your project should look like this:
 
 ```
-my-app/
-  README.md
-  node_modules/
-  package.json
-  public/
-    index.html
-    favicon.ico
-  src/
-    App.css
-    App.js
-    App.test.js
-    index.css
-    index.js
-    logo.svg
+/WebTodos
+  /ClientApp
+    README.md
+    /node_modules
+    package.json
+    /public
+      index.html
+      favicon.ico
+    /src
+      /components
+	    App.tsx
+	    ContainerTask.tsx
+	    EditTask.tsx
+	    Task.tsx
+	  /interfaces
+	    EnumStatus.tsx
+	    ITask.tsx
+	    ITaskService
+	  /model
+	    TaskImp.ts
+	  /services
+	    TaskService.ts
+	    TaskServiceDummy.ts
+	  /styles
+	  main.scss
+      index.html
+      index.tsx
+  /Controllers
+    ControllerGenericBase.cs
+	TaskController.cs
+  appsettings.json
+  Program.cs
+  Startup.cs
 ```
 
-For the project to build, **these files must exist with exact filenames**:
+### `Generating node_modules folder`
+cd ClientApp
+Run 'npm install' or 'npm update' so that the 'node_modules' folder to be generated
 
-* `public/index.html` is the page template;
-* `src/index.js` is the JavaScript entry point.
+### `Dummy mode or Normal one`
 
-You can delete or rename the other files.
+you can change boolean value so that the App to work mode Dummy (or Without Backend) or Normal
 
-You may create subdirectories inside `src`. For faster rebuilds, only files inside `src` are processed by Webpack.<br>
-You need to **put any JS and CSS files inside `src`**, otherwise Webpack won’t see them.
+ ```
+export class App extends React.Component<IProps, IState>{
 
-Only files inside `public` can be used from `public/index.html`.<br>
-Read instructions below for using assets from JavaScript and HTML.
+  isDummy: boolean = false;
+  service: ITaskService = this.isDummy ? new TaskServiceDummy() : new TaskService();
 
-You can, however, create more top-level directories.<br>
-They will not be included in the production build so you can use them for things like documentation.
-
-## Available Scripts
-
-In the project directory, you can run:
-
+ ```
 ### `npm start`
 
 Runs the app in the development mode.<br>

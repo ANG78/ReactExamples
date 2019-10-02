@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using BusinessLogic.Steps.Common;
 using Interfaces.BusinessLogic;
 using Interfaces.BusinessLogic.Entities;
@@ -8,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using AutoMapper;
 //using System.Web.Http.Cors;
 
 namespace Api.Controllers

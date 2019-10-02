@@ -4,10 +4,10 @@ import { ITask } from '../interfaces/ITask';
 import { EnumStatusTask } from '../interfaces/EnumStatusTask';
 import { EditTaskForm } from './EditTaskForm';
 import { ContainerTask } from './ContainerTask';
-
+import { TaskServiceDummy } from './../services/TaskServiceDummy';
+import { TaskService } from './../services/TaskService'
 
 interface IProps {
-  taskService: ITaskService,
 }
 
 interface IState {
@@ -19,9 +19,13 @@ interface IState {
 
 export class App extends React.Component<IProps, IState>{
 
+  isDummy: boolean = false;
+  service: ITaskService = this.isDummy ? new TaskServiceDummy() : new TaskService();
+
+
   constructor(props: IProps) {
     super(props);
-
+      
     this.handleAddTask = this.handleAddTask.bind(this);
     this.handleCloseTask = this.handleCloseTask.bind(this);
     this.handleToggleStatus = this.handleToggleStatus.bind(this);
@@ -38,7 +42,7 @@ export class App extends React.Component<IProps, IState>{
 
   componentDidMount() {
 
-    this.props.taskService.LoadTasks()
+      this.service.LoadTasks()
       .then((response) => {
 
         this.setState({
@@ -68,7 +72,7 @@ export class App extends React.Component<IProps, IState>{
 
   handleAddTask(newTask: ITask): Promise<ITask> {
 
-    return this.props.taskService.AddTask(newTask)
+    return this.service.AddTask(newTask)
       .then((response) => {
 
         const task = response;
@@ -89,7 +93,7 @@ export class App extends React.Component<IProps, IState>{
   handleToggleStatus(task: ITask): Promise<ITask> {
 
     const intialStatus = task.status;
-    return this.props.taskService.ToggleStatus(task)
+    return this.service.ToggleStatus(task)
       .then((response) => {
 
         if (intialStatus === response.status) {
