@@ -1,0 +1,92 @@
+//$bodyColor : rgb(56, 34, 34);
+//$divColor : rgb(255, 255, 0);
+
+$bodyColor : rgb(20, 0, 90);
+$divColor : rgb(255, 255, 255);
+
+body{
+    background-color: $bodyColor;
+}
+
+
+h4 {
+    background-color: white;
+}
+
+.ProductStock {
+    width: 300px;
+    float:left;
+}
+
+.messageError{
+    color: red;
+    font: bold 12px/30px; 
+}
+
+.LoginForm {
+    position: absolute;
+    z-index: 100;
+    width: 400px;
+    left: 400px;
+    animation-name: example;
+    animation-duration: 2s;
+    animation-fill-mode: both;
+}
+
+.alignRight{
+    float:left;
+}
+
+@keyframes example {
+    from {
+        top: 0px;
+    }
+
+    to {
+        top: 150px;
+    }
+}
+
+.NameProduct {
+    width: 75%;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    text-align:left;
+}
+
+.containertask {
+    padding-top: 1px;
+    padding-bottom: 10px;
+    padding-right: 10px;
+    background-color: rgb(0, 117, 117);
+    box-sizing: border-box;
+    min-height: 500px;
+    min-width: 400px;
+    border-bottom-right-radius: 25px;
+}
+
+
+
+.search{
+    border-bottom-right-radius: 25px;
+}
+
+.Cart {
+    margin-top: 5px;
+    padding-top: 1px;
+    padding-bottom: 10px;
+    justify-content: center;
+    background-color: rgb(0, 117, 117);
+    box-sizing: border-box;
+    border-bottom-right-radius: 25px;
+    border-bottom-left-radius: 25px;
+    border-color: black;
+}
+
+.CartHeader{
+    justify-content: center;
+}
+
+.bttQuantity{
+    min-width: 20px;
+}
